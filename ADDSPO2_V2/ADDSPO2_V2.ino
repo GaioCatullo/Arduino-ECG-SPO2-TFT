@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
-// Copyright 2021 
-// Peter Balch  
-// Pascotto Fabrizio
-// displays an ECG and an SPO2 Value to a display
+// Copyright 2024  Gaio Valerio Catullo 
+// Freely based on a project by Peter Balch  
+// Modified and corrected for the needs of the case.
+// The aim of the project is the 
+// visualization of Electrocardiogram and the oxygen saturation
 //
 //-----------------------------------------------------------------------------
 
