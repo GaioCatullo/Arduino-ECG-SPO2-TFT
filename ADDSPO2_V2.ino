@@ -1,6 +1,8 @@
 //-----------------------------------------------------------------------------
-// Copyright 2021 Peter Balch  _Pascotto Fabrizio
-// displays an ECG ans an SPO2
+// Copyright 2021 
+// Peter Balch  
+// Pascotto Fabrizio
+// displays an ECG and an SPO2 Value to a display
 //
 //-----------------------------------------------------------------------------
 
