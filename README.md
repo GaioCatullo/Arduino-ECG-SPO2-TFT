@@ -1,4 +1,4 @@
-The display used is 160 x 128 pixel or 340 x 240 pixel As driver the library used in Simple ILI9341.h and Simple ILI9341.ccp both files are in the project.
+The display used is 320 x 240 pixel or 340 x 240 pixel As driver the library used in Simple ILI9341.h and Simple ILI9341.ccp both files are in the project.
 All libraries used in this project are included in the project.
 
 
