@@ -6,7 +6,8 @@
 // visualization of Electrocardiogram and the oxygen saturation
 //
 //-----------------------------------------------------------------------------
-
+#include <Adafruit_GFX.h>       
+#include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <SPI.h>
 #include "SimpleILI9341.h"
@@ -15,10 +16,14 @@
 #include "MAX30100_SpO2Calculator.h"
 #include "heartRate.h"
 #include "MAX30100_BeatDetector.h"
+// #include "MAX30100_PulseOximeter.h"
+
 
 //-----------------------------------------------------------------------------
 // SPO2 and Beat Rate Deifinitions
 //-----------------------------------------------------------------------------
+
+// PulseOximeter  pox;
 
 MAX30105 particleSensor;
 SpO2Calculator calculator;
@@ -28,8 +33,8 @@ byte rates[RATE_SIZE];     //Array of heart rates
 byte rateSpot = 0;
 long lastBeat = 0;  //Time at which the last beat occurred
 
-float beatsPerMinute;
-int beatAvg;
+// float beatsPerMinute;
+// int beatAvg;
 uint8_t spo2 = 0;
 
 int beat = 0;
@@ -39,7 +44,7 @@ int beat = 0;
 // Defines
 //-----------------------------------------------------------------------------
 
-//#define bHasFakeECG
+
 
 // get register bit - faster: doesn't turn it into 0/1
 #ifndef getBit
@@ -50,8 +55,8 @@ int beat = 0;
 // Global Constants and Typedefs
 //-----------------------------------------------------------------------------
 
-const int TFT_WIDTH = 160;
-const int TFT_HEIGHT = 128;
+const int TFT_WIDTH = 320;
+const int TFT_HEIGHT = 240;
 
 // pins
 const int ECG_IN = A2;
@@ -61,9 +66,13 @@ const int LO_P_IN = A0;
 const int LO_N_IN = A1;
 
 // Display pins
-const int TFT_CS = 10;
-const int TFT_CD = 9;
-const int TFT_RST = 8;
+// const int TFT_CS = 10;
+// const int TFT_CD = 9;
+// const int TFT_RST = 8;
+
+const int TFT_CS    = 10;
+const int TFT_CD    = 8;
+const int TFT_RST   = 9;
 
 const int SamplePeriod = 5;  // mSec
 const int PoincareScale = 10;
@@ -85,9 +94,31 @@ enum TMode { mdLargeECG,
              mdSmallECG,
              mdPoincare } mode = mdLargeECG;
 
-//-----------------------------------------------------------------------------
-// testADCfast
-//-----------------------------------------------------------------------------
+// #define SCREEN_WIDTH 128 // OLED display  width, in pixels
+// #define SCREEN_HEIGHT 32 // OLED display height, in pixels
+// #define  OLED_RESET    -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+
+// Adafruit_SSD1306  display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); //Declaring the display  name (display)
+
+
+// static const unsigned char PROGMEM logo2_bmp[] =
+// { 0x03,  0xC0, 0xF0, 0x06, 0x71, 0x8C, 0x0C, 0x1B, 0x06, 0x18, 0x0E, 0x02, 0x10, 0x0C, 0x03,  0x10,              //Logo2 and Logo3 are two bmp pictures that display on the OLED  if called
+// 0x04, 0x01, 0x10, 0x04, 0x01, 0x10, 0x40, 0x01, 0x10, 0x40, 0x01, 0x10,  0xC0, 0x03, 0x08, 0x88,
+// 0x02, 0x08, 0xB8, 0x04, 0xFF, 0x37, 0x08, 0x01, 0x30,  0x18, 0x01, 0x90, 0x30, 0x00, 0xC0, 0x60,
+// 0x00, 0x60, 0xC0, 0x00, 0x31, 0x80,  0x00, 0x1B, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x04, 0x00,  };
+
+// static const unsigned  char PROGMEM logo3_bmp[] =
+// { 0x01, 0xF0, 0x0F, 0x80, 0x06, 0x1C, 0x38, 0x60,  0x18, 0x06, 0x60, 0x18, 0x10, 0x01, 0x80, 0x08,
+// 0x20, 0x01, 0x80, 0x04, 0x40,  0x00, 0x00, 0x02, 0x40, 0x00, 0x00, 0x02, 0xC0, 0x00, 0x08, 0x03,
+// 0x80, 0x00,  0x08, 0x01, 0x80, 0x00, 0x18, 0x01, 0x80, 0x00, 0x1C, 0x01, 0x80, 0x00, 0x14, 0x00,
+// 0x80,  0x00, 0x14, 0x00, 0x80, 0x00, 0x14, 0x00, 0x40, 0x10, 0x12, 0x00, 0x40, 0x10, 0x12,  0x00,
+// 0x7E, 0x1F, 0x23, 0xFE, 0x03, 0x31, 0xA0, 0x04, 0x01, 0xA0, 0xA0, 0x0C,  0x00, 0xA0, 0xA0, 0x08,
+// 0x00, 0x60, 0xE0, 0x10, 0x00, 0x20, 0x60, 0x20, 0x06,  0x00, 0x40, 0x60, 0x03, 0x00, 0x40, 0xC0,
+// 0x01, 0x80, 0x01, 0x80, 0x00, 0xC0,  0x03, 0x00, 0x00, 0x60, 0x06, 0x00, 0x00, 0x30, 0x0C, 0x00,
+// 0x00, 0x08, 0x10,  0x00, 0x00, 0x06, 0x60, 0x00, 0x00, 0x03, 0xC0, 0x00, 0x00, 0x01, 0x80, 0x00  };
+
+int publicBPM = 0;
+
 int getADCfast(void) {
   while (!getBit(ADCSRA, ADIF))
     ;  // wait for ADC
@@ -346,7 +377,8 @@ void calcBPM(uint8_t ecg, uint16_t x) {
 //-----------------------------------------------------------------------------
 // DrawTraceLarge
 //-----------------------------------------------------------------------------
-void DrawTraceLarge(uint8_t y) {
+void DrawTraceLarge(uint8_t y)
+{
   static uint16_t x = 0;
   static uint8_t pt = 0;
   static uint8_t py = 0;
@@ -356,14 +388,13 @@ void DrawTraceLarge(uint8_t y) {
 
   x++;
   x = x % DisplayRepeat;
-  y = TFT_HEIGHT - y;
-
+  y = TFT_HEIGHT-y;
+  
   if (x < TFT_WIDTH) {
     DrawGridVLine(x, pt, Trace[x]);
     if (y >= py)
-      DrawVLine(x, py, y - py + 1, TFT_WHITE);
-    else
-      DrawVLine(x, y, py - y + 1, TFT_WHITE);
+      DrawVLine(x, py, y-py+1, TFT_WHITE); else
+      DrawVLine(x, y, py-y+1, TFT_WHITE);
     py = y;
 
     pt = Trace[x];
@@ -410,20 +441,6 @@ void DrawTraceSmall(uint8_t y) {
   calcBPM(y, x);
 }
 
-//-------------------------------------------------------------------------
-// MakeFakePulse
-//-------------------------------------------------------------------------
-#ifdef bHasFakeECG
-void MakeFakePulse(void) {
-  static uint16_t fakePeriod = 1000;
-  static uint16_t i = 0;
-  i++;
-  i = i % (fakePeriod / SamplePeriod);
-  digitalWrite(FAKE_OUT, i < 10);
-  if (i == 0)
-    fakePeriod = (fakePeriod * 3 + random(600, 1300)) / 4;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // CheckButton
@@ -635,7 +652,9 @@ int FilterNotch60Hz(int ecg) {
 //-------------------------------------------------------------------------
 void setup(void) {
 
-  Serial.begin(57600);
+  // Serial.begin(57600);
+  // Serial.begin(115200);
+  Serial.begin(500000);
   Serial.println("ECG");
 
   sPO2setup();
@@ -649,11 +668,10 @@ void setup(void) {
   pinMode(LO_N_IN, INPUT);
   pinMode(7, INPUT_PULLUP);
 
-#ifdef bHasFakeECG
-  pinMode(FAKE_OUT, OUTPUT);
-#endif
 
-  ILI9341Begin(TFT_CS, TFT_CD, TFT_RST, TFT_WIDTH, TFT_HEIGHT, 104);
+  //ILI9341Begin(TFT_CS, TFT_CD, TFT_RST, TFT_WIDTH, TFT_HEIGHT, 104);
+    ILI9341Begin(TFT_CS, TFT_CD, TFT_RST, TFT_WIDTH, TFT_HEIGHT, ILI9341_Rotation3);
+  
   //ILI9341_Rotation4);
 
   //ILI9341_Rotation4);
@@ -661,6 +679,9 @@ void setup(void) {
   DrawGrid();
   WriteSPO2Label();
   Serial.println("ECG_drawed");
+
+  // display.begin(SSD1306_SWITCHCAPVCC,  0x3C); //Start the OLED display
+  // display.display();
 }
 
 //-----------------------------------------------------------------------------
@@ -689,9 +710,6 @@ void loop(void) {
     //    ecg = FilterLowPass(ecg);
     //    ecg = FilterNotch60Hz(ecg);
 
-#ifdef bHasFakeECG
-    MakeFakePulse();
-#endif
 
     switch (mode) {
       Serial.println("");
@@ -743,18 +761,14 @@ void WriteSPO2Label() {
 
 
 void sPO2setup() {
-  //Serial.begin(115200);
-  //Serial.println("Initializing...");
-
-  // Initialize sensor
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  //Use default I2C port, 400kHz speed
+  
+  if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  
+  //Use default I2C port, 400kHz speed
   {
     Serial.println("MAX30105 was not found. Please check wiring/power. ");
-    while (1)
-      ;
+    while (1);
   }
   Serial.println("Place your index finger on the sensor with steady pressure.");
-
   particleSensor.setup();
   particleSensor.setPulseAmplitudeRed(0x3A);
   particleSensor.setPulseAmplitudeGreen(0);  //Turn off Green LED
@@ -768,18 +782,18 @@ void spoO2loop() {
     //We sensed a beat!
     long delta = millis() - lastBeat;
     lastBeat = millis();
-    beatsPerMinute = 60 / (delta / 1000.0);
-    if (beatsPerMinute < 200 && beatsPerMinute > 30) {
+    // beatsPerMinute = 60 / (delta / 1000.0);
+    // if (beatsPerMinute < 200 && beatsPerMinute > 30) {
 
 
-      rates[rateSpot++] = (byte)beatsPerMinute;  //store in array
-      rateSpot %= RATE_SIZE;
+    //   rates[rateSpot++] = (byte)beatsPerMinute;  //store in array
+    //   rateSpot %= RATE_SIZE;
 
-      beatAvg = 0;
-      for (byte x = 0; x < RATE_SIZE; x++)
-        beatAvg += rates[x];
-      beatAvg /= RATE_SIZE;
-    }
+    //   beatAvg = 0;
+    //   for (byte x = 0; x < RATE_SIZE; x++)
+    //     beatAvg += rates[x];
+    //   beatAvg /= RATE_SIZE;
+    // }
 
     redValue = particleSensor.getRed();
     calculator.update(irValue, redValue, true);
@@ -788,32 +802,62 @@ void spoO2loop() {
     float strength = 0.99;
     float avg = (strength * avg) + ((1.0 - strength) * irValue);
     float result = irValue - avg;
-    bool beatDetected = beatDetector.addSample(result);
-    Serial.print(beatDetector.getRate());
-    Serial.print(checkForBeat(irValue));
+    //bool beatDetected = beatDetector.addSample(result);
+    // Serial.print(beatDetector.getRate());
+    // Serial.print(checkForBeat(irValue));
     Serial.print(" IR=");
     Serial.print(irValue);
     Serial.print(" Red=");
     Serial.print(redValue);
-    if (beat != 0) {
-      Serial.print(", BPM = ");
-      Serial.print(beat);
-    } else {
-      Serial.print(", BPM=");
-      Serial.print(beatsPerMinute);
-    }
+    // if (beat != 0) {
+    //   Serial.print(", BPM = ");
+    //   Serial.print(beat);
+    // } else {
+    //   Serial.print(", BPM=");
+    //   Serial.print(beatsPerMinute);
+    // }
 
-    Serial.print(", Avg BPM=");
-    Serial.print(beatAvg);
-    Serial.print(", SPO2=");
-    Serial.print(spo2);
-    Serial.println();
+    // Serial.print(", Avg BPM=");
+    // Serial.print(beatAvg);
+    // Serial.print(", SPO2=");
+    // Serial.print(spo2);
+    // Serial.println();
   }
   if (irValue < 50000) {
     Serial.print(" No finger?");
     Serial.println();
     spo2 = 0;
-    beatsPerMinute = 0;
-    beatAvg = 0;
   }
 }
+// void printOLED_NoFinger(){
+//      //display.clearDisplay();
+//      display.setTextSize(1);                    
+//      display.setTextColor(WHITE);             
+//      display.setCursor(30,5);                
+//      display.println("Please Place "); 
+//      display.setCursor(30,15);
+//      display.println("your finger ");  
+//      display.display();
+// }
+
+// void printOLED(){
+//   display.clearDisplay();                                   
+//   //Clear the display
+//   display.drawBitmap(5, 5, logo2_bmp, 24, 21, WHITE);       
+//   //Draw the first  bmp picture (little heart)
+//   display.setTextSize(1);                                
+//   //And  still displays the average BPM
+//   display.setTextColor(WHITE);             
+//   display.setCursor(50,0);                
+//   display.println("BPM");             
+//   display.setCursor(80,0);                
+//   display.println(publicBPM);  
+//   display.setCursor(50,18);
+//   display.println("SpO2");
+//   display.setCursor(80,18);
+//   display.println(spo2);
+//   display.setCursor(95,18);
+//   display.println("%");
+//   display.display();
+// }
+

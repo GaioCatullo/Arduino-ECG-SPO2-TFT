@@ -21,6 +21,12 @@ The table below shows the 1.8 TFT wiring to Arduino UNO.
 
 ![11](https://github.com/GaioCatullo/Arduino-ECG-SPO2-TFT/assets/157423379/25ec4ae4-db6e-4a1d-b851-8744ebd9c0e9)
 
+
+
+![alt text](image.png)
+
+
+
 |SD card on TFT display	|      |Wiring to Arduino Uno  |
 | :--------------------:|:----:|:---------------------:|
 |CS                     |  =>  |    4                  |
