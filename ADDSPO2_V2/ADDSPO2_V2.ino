@@ -19,7 +19,7 @@
 //-----------------------------------------------------------------------------
 // SPO2 and Beat Rate Deifinitions
 //-----------------------------------------------------------------------------
-
+// FP 03032024
 MAX30105 particleSensor;
 SpO2Calculator calculator;
 BeatDetector beatDetector;
@@ -39,7 +39,7 @@ int beat = 0;
 // Defines
 //-----------------------------------------------------------------------------
 
-//#define bHasFakeECG
+
 
 // get register bit - faster: doesn't turn it into 0/1
 #ifndef getBit
@@ -50,20 +50,26 @@ int beat = 0;
 // Global Constants and Typedefs
 //-----------------------------------------------------------------------------
 
-const int TFT_WIDTH = 160;
-const int TFT_HEIGHT = 128;
+// const int TFT_WIDTH = 160;
+// const int TFT_HEIGHT = 128;
+
+const int TFT_WIDTH = 320;
+const int TFT_HEIGHT = 240;
 
 // pins
-const int ECG_IN = A2;
+const int ECG_IN = A0;
 
-const int BUTTON_IN = A4;
-const int LO_P_IN = A0;
-const int LO_N_IN = A1;
+
+const int LO_P_IN = 5;
+const int LO_N_IN = 6;
 
 // Display pins
 const int TFT_CS = 10;
-const int TFT_CD = 9;
-const int TFT_RST = 8;
+const int TFT_CD = 8;
+const int TFT_RST = 9;
+
+
+
 
 const int SamplePeriod = 5;  // mSec
 const int PoincareScale = 10;
@@ -105,13 +111,13 @@ int getADCfast(void) {
 void DrawGrid() {
   Serial.println(mode);
   switch (mode) {
-
     case mdLargeECG: DrawGridLarge(); break;
-    case mdSmallECG: DrawGridSmall(); break;
+    case mdSmallECG: DrawGridSmall(); break;  
     case mdPoincare: DrawGridPoincare(); break;
   }
   DisplayRepeat = TFT_WIDTH;
-  //DrawPoincare(0);
+  DrawPoincare(0);
+  ignoreBeats = 2;
   ignoreBeats = 2;
 }
 
@@ -410,38 +416,25 @@ void DrawTraceSmall(uint8_t y) {
   calcBPM(y, x);
 }
 
-//-------------------------------------------------------------------------
-// MakeFakePulse
-//-------------------------------------------------------------------------
-#ifdef bHasFakeECG
-void MakeFakePulse(void) {
-  static uint16_t fakePeriod = 1000;
-  static uint16_t i = 0;
-  i++;
-  i = i % (fakePeriod / SamplePeriod);
-  digitalWrite(FAKE_OUT, i < 10);
-  if (i == 0)
-    fakePeriod = (fakePeriod * 3 + random(600, 1300)) / 4;
-}
-#endif
+
 
 //-----------------------------------------------------------------------------
 // CheckButton
 //   check pushbutton and cnahge mode
 //-----------------------------------------------------------------------------
-void CheckButton() {
-  static int btnCnt = 0;
-  if (digitalRead(BUTTON_IN)) {
-    btnCnt = 0;
-  } else {
-    btnCnt++;
-    if (btnCnt == 20) {
-      mode = (mode + 1) % 3;
-      //DrawGrid();
-      //WriteSPO2Label();
-    }
-  }
-}
+// void CheckButton() {
+//   static int btnCnt = 0;
+//   if (digitalRead(BUTTON_IN)) {
+//     btnCnt = 0;
+//   } else {
+//     btnCnt++;
+//     if (btnCnt == 20) {
+//       mode = (mode + 1) % 3;
+//       //DrawGrid();
+//       //WriteSPO2Label();
+//     }
+//   }
+// }
 
 //-----------------------------------------------------------------------------
 // CheckLeadsOff
@@ -635,34 +628,29 @@ int FilterNotch60Hz(int ecg) {
 //-------------------------------------------------------------------------
 void setup(void) {
 
-  Serial.begin(57600);
+  Serial.begin(9600);
   Serial.println("ECG");
 
   sPO2setup();
 
-  pinMode(ECG_IN, INPUT);
-  analogReference(EXTERNAL);
+  
+  // analogReference(EXTERNAL);
   analogRead(ECG_IN);  // initialise ADC to read audio input
 
-  pinMode(BUTTON_IN, INPUT_PULLUP);
+  // pinMode(BUTTON_IN, INPUT_PULLUP);
   pinMode(LO_P_IN, INPUT);
   pinMode(LO_N_IN, INPUT);
   pinMode(7, INPUT_PULLUP);
 
-#ifdef bHasFakeECG
-  pinMode(FAKE_OUT, OUTPUT);
-#endif
 
-  ILI9341Begin(TFT_CS, TFT_CD, TFT_RST, TFT_WIDTH, TFT_HEIGHT, 104);
-  //ILI9341_Rotation4);
-
-  //ILI9341_Rotation4);
-
+  mode = 0;
+  ILI9341Begin(TFT_CS, TFT_CD, TFT_RST, TFT_WIDTH, TFT_HEIGHT, ILI9341_Rotation3);
   DrawGrid();
-  WriteSPO2Label();
-  Serial.println("ECG_drawed");
-}
 
+  WriteSPO2Label();
+  //Serial.println("ECG_drawed");
+}
+bool noSPo2Sensor = false;
 //-----------------------------------------------------------------------------
 // Main routines
 // loop
@@ -673,7 +661,6 @@ void loop(void) {
 
   static unsigned long nextTime = 0;
   unsigned long t;
-
   t = millis();
 
   if (t > nextTime) {
@@ -683,27 +670,32 @@ void loop(void) {
       nextTime = nextTime + 5;
 
     ecg = getADCfast();
+    // ecg = analogRead(A0);
+    Serial.println(ecg);
 
-    ecg = FilterNotch50HzQ1(ecg);
-    //    ecg = FilterNotch50HzQ2(ecg);
-    //    ecg = FilterLowPass(ecg);
-    //    ecg = FilterNotch60Hz(ecg);
+    //ecg = FilterNotch50HzQ1(ecg);
+    ecg = FilterNotch50HzQ2(ecg);
+        //ecg = FilterLowPass(ecg);
+        //ecg = FilterNotch60Hz(ecg);
 
-#ifdef bHasFakeECG
-    MakeFakePulse();
-#endif
+  //Serial.println(ecg);
 
     switch (mode) {
       Serial.println("");
       Serial.println(mode);
-      case mdLargeECG: DrawTraceLarge(ecg / 4); break;
+      case mdLargeECG: DrawTraceLarge(ecg / 8); break;
       case mdSmallECG: DrawTraceSmall(ecg / 4); break;
       case mdPoincare: calcBPM(ecg / 4, 0); break;
     }
 
-    CheckButton();
+    // CheckButton();
+    Serial.println(noSPo2Sensor);
     CheckLeadsOff();
-    spoO2loop();
+    if(!noSPo2Sensor){
+      Serial.println(noSPo2Sensor);
+      spoO2loop();
+    }
+    
     
     char astr[5];
     if(spo2 == 0){
@@ -750,8 +742,9 @@ void sPO2setup() {
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  //Use default I2C port, 400kHz speed
   {
     Serial.println("MAX30105 was not found. Please check wiring/power. ");
-    while (1)
-      ;
+    noSPo2Sensor = true;
+    return;
+
   }
   Serial.println("Place your index finger on the sensor with steady pressure.");
 
