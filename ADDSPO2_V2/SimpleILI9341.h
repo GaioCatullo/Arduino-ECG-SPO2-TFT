@@ -32,7 +32,6 @@ extern uint8_t letter_gap;
 #define ILI9341_Rotation1  (ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR)
 #define ILI9341_Rotation2  (ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR)
 #define ILI9341_Rotation3  (ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_BGR)
-#define ILI9341_Rotation4  (ILI9341_MADCTL_MX | ILI9341_MADCTL_MH | ILI9341_MADCTL_ML | ILI9341_MADCTL_BGR)
 
 void ILI9341Begin(uint8_t CS = 10, uint8_t CD = 8, uint8_t RST = 7, uint16_t w = 320, uint16_t h = 240, uint8_t Rotation = ILI9341_Rotation1);
 void ILI9341SetCursor(uint16_t x, uint16_t y);
