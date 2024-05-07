@@ -1,4 +1,4 @@
-The display used is 320 x 240 pixel or 340 x 240 pixel As driver the library used in Simple ILI9341.h and Simple ILI9341.ccp both files are in the project.
+The display used is 320 x 240 pixel As driver the library used in Simple ILI9341.h and Simple ILI9341.ccp both files are in the project.
 All libraries used in this project are included in the project.
 
 
@@ -7,13 +7,13 @@ Pin wiring
 
 The table below shows the 1.8 TFT wiring to Arduino UNO.
 
-|1.8 TFT Display |   |Wiring to Arduino Uno|
+|2.8 TFT Display |    |Wiring to Arduino Uno|
 | :-------------:|:--:|:--------------------|
 |LED	           | => |   3.3 V             |
 |SCK             | => |	  Pin 13            |
-|SDA	           | => |   Pin 11            |
-|(A0 or DC)      | => |   Pin 9	            |
-|RESET           | => |   Pin	8             |
+|SDA (MOSI)      | => |   Pin 11 (MOSI)     |
+|DC              | => |   Pin 8	            |
+|TFT RESET       | => |   Pin	9             |
 |CS	             | => |   Pin 10            |
 |GND	           | => |   GND               |
 |VCC	           | => |   5 V               |
