@@ -49,11 +49,6 @@ The table below shows the 1.8 TFT wiring to Arduino UNO.
 
 PIN 
 
-![ard](https://github.com/GaioCatullo/Arduino-ECG-SPO2-TFT/assets/157423379/5ac05fef-17cc-4b65-aeed-756311a5356b)
-
-
-
-
 
 
 
