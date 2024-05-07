@@ -41,11 +41,11 @@ The table below shows the 1.8 TFT wiring to Arduino UNO.
 
 |Board Label	|   Pin Function      |  Wiring to Arduino Uno  |
 | :----------:|:-------------------:|:---------------------:|
-|GND          | Ground              |    GND                 |
+|GND          | Ground              |    GND                |
 |3.3V         | Power suply         |    3.3V               |
-|Output       | Output signal       |    A0                 |
-|LO -         | Leads off - Detect  |    A1                 |
-|LO +         | Leads off + Detect  |    A2                 |
+|Output       | Output signal       |    A1                 |
+|LO -         | Leads off - Detect  |    6                  |
+|LO +         | Leads off + Detect  |    5                  |
 
 PIN 
 
