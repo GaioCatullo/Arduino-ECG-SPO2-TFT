@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
-// Copyright 2024  Gaio Valerio Catullo 
-// Freely based on a project by Peter Balch  
+// Copyright 2024  Gaio Valerio Catullo
+// Freely based on a project by Peter Balch
 // Modified and corrected for the needs of the case.
-// The aim of the project is the 
+// The aim of the project is the
 // visualization of Electrocardiogram and the oxygen saturation
 //
 //-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ const int TFT_WIDTH = 320;
 const int TFT_HEIGHT = 240;
 
 // pins
-const int ECG_IN = A0;
+const int ECG_IN = A1;
 
 
 const int LO_P_IN = 5;
@@ -112,7 +112,7 @@ void DrawGrid() {
   Serial.println(mode);
   switch (mode) {
     case mdLargeECG: DrawGridLarge(); break;
-    case mdSmallECG: DrawGridSmall(); break;  
+    case mdSmallECG: DrawGridSmall(); break;
     case mdPoincare: DrawGridPoincare(); break;
   }
   DisplayRepeat = TFT_WIDTH;
@@ -354,16 +354,16 @@ void calcBPM(uint8_t ecg, uint16_t x) {
 //-----------------------------------------------------------------------------
 void DrawTraceLarge(uint8_t y) {
   static uint16_t x = 0;
-  static uint8_t pt = 0;
-  static uint8_t py = 0;
+  static uint8_t pt = 150;
+  static uint8_t py = 50;
   int i;
-
-  calcBPM(y, x);
-
+  static uint8_t offset = -60;
   x++;
   x = x % DisplayRepeat;
-  y = TFT_HEIGHT - y;
-
+  
+  y = (TFT_HEIGHT - y);
+  calcBPM(y/2, 0);
+  y = y- offset;
   if (x < TFT_WIDTH) {
     DrawGridVLine(x, pt, Trace[x]);
     if (y >= py)
@@ -375,6 +375,8 @@ void DrawTraceLarge(uint8_t y) {
     pt = Trace[x];
     Trace[x] = y;
   }
+
+  
 }
 
 //-----------------------------------------------------------------------------
@@ -633,7 +635,7 @@ void setup(void) {
 
   sPO2setup();
 
-  
+
   // analogReference(EXTERNAL);
   analogRead(ECG_IN);  // initialise ADC to read audio input
 
@@ -671,44 +673,42 @@ void loop(void) {
 
     ecg = getADCfast();
     // ecg = analogRead(A0);
-    Serial.println(ecg);
+
 
     //ecg = FilterNotch50HzQ1(ecg);
     ecg = FilterNotch50HzQ2(ecg);
-        //ecg = FilterLowPass(ecg);
-        //ecg = FilterNotch60Hz(ecg);
+    //ecg = FilterLowPass(ecg);
+    ecg = FilterNotch60Hz(ecg);
 
-  //Serial.println(ecg);
+    //Serial.println(ecg);
 
     switch (mode) {
-      Serial.println("");
-      Serial.println(mode);
-      case mdLargeECG: DrawTraceLarge(ecg / 8); break;
+      // Serial.println("");
+      // Serial.println(mode);
+      case mdLargeECG: DrawTraceLarge(ecg / 2); break;
       case mdSmallECG: DrawTraceSmall(ecg / 4); break;
       case mdPoincare: calcBPM(ecg / 4, 0); break;
     }
+    calcBPM(ecg / 4, 0);
+      // CheckButton();
 
-    // CheckButton();
-    Serial.println(noSPo2Sensor);
-    CheckLeadsOff();
-    if(!noSPo2Sensor){
-      Serial.println(noSPo2Sensor);
+      CheckLeadsOff();
+    if (!noSPo2Sensor) {
+
       spoO2loop();
     }
-    
-    
+
+
     char astr[5];
-    if(spo2 == 0){
+    if (spo2 == 0) {
       char g[10] = "0";
       WriteSPO2(g);
-    }
-    else if(spo2 < 100){
-      
-      itoa(spo2, astr,10);
+    } else if (spo2 < 100) {
+
+      itoa(spo2, astr, 10);
       WriteSPO2(astr);
-    }
-    else if(spo2 > 99){
-      
+    } else if (spo2 > 99) {
+
       itoa(spo2, astr, 10);
       WriteSPO2(astr);
     }
@@ -716,7 +716,7 @@ void loop(void) {
 }
 
 void WriteSPO2(char *s) {
-   if(oldSPO2Value != spo2){
+  if (oldSPO2Value != spo2) {
     DrawBox(125, 0, 37, 20, TFT_MAROON);
     oldSPO2Value = spo2;
     DrawStringAt(135, 15, s, MediumFont, TFT_WHITE);
@@ -744,7 +744,6 @@ void sPO2setup() {
     Serial.println("MAX30105 was not found. Please check wiring/power. ");
     noSPo2Sensor = true;
     return;
-
   }
   Serial.println("Place your index finger on the sensor with steady pressure.");
 
@@ -782,29 +781,29 @@ void spoO2loop() {
     float avg = (strength * avg) + ((1.0 - strength) * irValue);
     float result = irValue - avg;
     bool beatDetected = beatDetector.addSample(result);
-    Serial.print(beatDetector.getRate());
-    Serial.print(checkForBeat(irValue));
-    Serial.print(" IR=");
-    Serial.print(irValue);
-    Serial.print(" Red=");
-    Serial.print(redValue);
+    // Serial.print(beatDetector.getRate());
+    // Serial.print(checkForBeat(irValue));
+    // Serial.print(" IR=");
+    // Serial.print(irValue);
+    // Serial.print(" Red=");
+    // Serial.print(redValue);
     if (beat != 0) {
-      Serial.print(", BPM = ");
-      Serial.print(beat);
+      // Serial.print(", BPM = ");
+      // Serial.print(beat);
     } else {
-      Serial.print(", BPM=");
-      Serial.print(beatsPerMinute);
+      // Serial.print(", BPM=");
+      // Serial.print(beatsPerMinute);
     }
 
-    Serial.print(", Avg BPM=");
-    Serial.print(beatAvg);
-    Serial.print(", SPO2=");
-    Serial.print(spo2);
-    Serial.println();
+    // Serial.print(", Avg BPM=");
+    // Serial.print(beatAvg);
+    // Serial.print(", SPO2=");
+    // Serial.print(spo2);
+    // Serial.println();
   }
   if (irValue < 50000) {
-    Serial.print(" No finger?");
-    Serial.println();
+    // Serial.print(" No finger?");
+    // Serial.println();
     spo2 = 0;
     beatsPerMinute = 0;
     beatAvg = 0;
